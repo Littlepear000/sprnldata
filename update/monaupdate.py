@@ -1,12 +1,7 @@
-import tkinter as tk
-from tkinter import ttk
-import sv_ttk
-# from swxl.pandaspro.core import pwread
 import selenium
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 import time
-from datetime import datetime
 import shutil
 import os
 
@@ -26,7 +21,7 @@ monatabs = [
 
 
 # Define functions: Update Data in Local Drives
-def monaupdate():
+def monaupdate(versiongui):
     global driver
     driver = webdriver.Edge()
     time.sleep(3)
@@ -41,31 +36,10 @@ def monaupdate():
 ===================================
     Step 1 Completed. Files Downloaded 
     ''')
-    version = entry_version.get()
+    version = versiongui.get()
     for file_name in monatabs:
         new_file_name = file_name + version + '.xlsx'
         print(new_file_name, file_name)
         shutil.move(os.path.join(downloads_path, file_name + '.xlsx'), os.path.join(target_path, new_file_name))
     print('Step 2 Completed. Files Saved in MONA Database Path')
 
-
-root = tk.Tk()
-root.geometry('500x200')
-root.title('Retrieving Data')
-
-page = tk.Frame(root)
-page.pack(expand=True)
-
-# Enter version number
-label = ttk.Label(page, text='Version:')
-label.grid(row=0, column=0, padx=10, pady=10)
-entry_version = ttk.Entry(page, width=20)
-entry_version.insert(0, datetime.strftime(datetime.now(), '%Y%m%d_%H%M'))
-entry_version.grid(row=0, column=1, columnspan=2, pady=10)
-
-# Button
-monabutton = ttk.Button(page, text='MONA Update', command=monaupdate)
-monabutton.grid(row=1, column=0, columnspan=3, pady=10)
-
-sv_ttk.set_theme("dark")
-root.mainloop()
