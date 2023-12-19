@@ -19,9 +19,13 @@ monatabs = [
     'Mecon'
 ]
 
-
 # Define functions: Update Data in Local Drives
 def monaupdate(versiongui):
+    for file_name in os.listdir(downloads_path):
+        if file_name in [tab + '.xlsx' for tab in monatabs]:
+            del_prev_monatab = os.path.join(downloads_path, file_name)
+            os.remove(del_prev_monatab)
+
     global driver
     driver = webdriver.Edge()
     time.sleep(3)
@@ -32,13 +36,13 @@ def monaupdate(versiongui):
         ele.click()
         time.sleep(45)
     print('''
-    
+
 ===================================
-    Step 1 Completed. Files Downloaded 
+    Step 1 Completed. Files Downloaded
     ''')
     version = versiongui.get()
     for file_name in monatabs:
-        new_file_name = file_name + version + '.xlsx'
+        new_file_name = file_name + '_' + version + '.xlsx'
         print(new_file_name, file_name)
         shutil.move(os.path.join(downloads_path, file_name + '.xlsx'), os.path.join(target_path, new_file_name))
     print('Step 2 Completed. Files Saved in MONA Database Path')

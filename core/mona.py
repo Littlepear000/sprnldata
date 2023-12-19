@@ -2,11 +2,11 @@ from swxl.pandaspro.core import pwread
 from sprnldata.core.mona_config import *
 import os
 
-def monaload(version='latest', tab='D'):
+def monaload(version='latest', tab='D', keeplist=default['D']):
     data, mapping = pwread(dbpath + monatabdict[tab] + monameta[version] + '.xlsx')
-    data = data[default]
+    data = data[keeplist]
     data.rename(columns=monarename, inplace=True)
-    data['programid'] = data['ifscode'].astype('str') + data['appdate'].dt.strftime('%Y%m%d')
+    data['programid'] = data['ifscode'].astype('int').astype('str') + data['appdate'].dt.strftime('%Y%m%d')
     data['month'] = data['appdate'].dt.month
     data['day'] = data['appdate'].dt.day
     data['amount_int'] = round(data['amount'], 0)
@@ -19,4 +19,9 @@ def monaload(version='latest', tab='D'):
     data.loc[data.inlist('facility', "PCI", "EFF", "SBA", "PLL", "PCL", "FCL", "SLL", otype='m'), 'account'] = 'GRA'
     data.loc[data.inlist('facility', "PSI", "ECF", "PRGF", "SCF", "ESF", otype='m'), 'account'] = 'PRGT'
     data.loc[data['facility'].str.contains('-'), 'account'] = 'PRGT'
+    return data
+
+def monapload(version='latest', tab='P', keeplist=default['P']):
+    data, mapping = pwread(dbpath + monatabdict[tab] + monameta[version] + '.xlsx')
+    data = data[keeplist]
     return data
