@@ -1,6 +1,6 @@
 from swxl.pandaspro.core import pwread
-from sprnldata.core.mona_config import *
-import os
+from core.mona.mona_config import *
+
 
 def monaload(version='latest', tab='D', keeplist=default['D']):
     data, mapping = pwread(dbpath + monatabdict[tab] + monameta[version] + '.xlsx')
