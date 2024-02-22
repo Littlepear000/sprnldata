@@ -6,6 +6,8 @@ import numpy as np
 import xlwings as xw
 
 template = r'C:\ProgramData\anaconda3\Lib\sprnldata\core\ecos\dev-template.xlsx'
+dummyfile = r'Q:\DATA\SPRNL\Users\NL RA\Country Code & Template\Country Code & Grouping\xlarchive\xldummies.xlsx'
+dummy = pwread(dummyfile)[0]
 wb = xw.Book(template)
 ws = wb.sheets['Dashboard']
 
@@ -15,7 +17,6 @@ df['COUNTRY'] = ''
 df['dates']=''
 
 for col in sectioncol:
-    print(col)
     dbname = ws.range(f'{col}3').value
     colindex = column_index_from_string(col)
     if dbname is not None:
@@ -38,7 +39,7 @@ for col in sectioncol:
         indllist_col = get_column_letter(indllist_colindex)
         indlist = pwread(template, 'Dashboard', f'{indllist_col}9:{indllist_col}209', firstrow=False)[0][indllist_col.lower()].dropna().to_list()
 
-        data = imf_datatools.get_ecos_sdmx_data(dbname, clist, indlist, longformat=True)
+        data = imf_datatools.get_ecos_sdmx_data(dbname, clist, indlist, freq=freq, longformat=True)
         if start is not None:
             data = data[data['dates'].dt.year >= start]
         if end is not None:
@@ -47,4 +48,6 @@ for col in sectioncol:
     else:
         continue
 
-df
+df.rename(columns={'COUNTRY':'ifscode'}, inplace=True)
+df['ifscode'] = df['ifscode'].astype(int)
+final = pd.merge(df, dummy, on='ifscode', how='left')
