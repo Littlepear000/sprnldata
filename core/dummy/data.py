@@ -4,7 +4,7 @@ import sprnldata.core.dummy.config as c
 import pandas as pd
 from pandaspro import FramePro
 
-class dummy(ImfFrame):
+class Dummy(ImfFrame):
 
     @staticmethod
     def _getdummy(engine='country'):
@@ -20,10 +20,10 @@ class dummy(ImfFrame):
         if isinstance(data, (pd.DataFrame, FramePro)):
             super().__init__(data=data, *args, **kwargs)
         else:
-            result = dummy._getdummy(engine=engine)
+            result = Dummy._getdummy(engine=engine)
             super().__init__(data=result, *args, **kwargs)
 
 if __name__ == '__main__':
-    a = dummy()
-    b= a.inlist('ifscode',111)
+    a = Dummy()
+    # b= a.inlist('ifscode',111)
 
