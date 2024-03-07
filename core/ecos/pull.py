@@ -13,6 +13,7 @@ sectioncol = ['B', 'F', 'J', 'N', 'R']
 df = pd.DataFrame()
 df['COUNTRY'] = ''
 df['dates']=''
+errmsg = ''
 
 for col in sectioncol:
     dbname = ws.range(f'{col}3').value
@@ -30,19 +31,22 @@ for col in sectioncol:
         else:
             clist_colindex = colindex - 1
             clist_col = get_column_letter(clist_colindex)
-            clist = pwread(template, 'Dashboard', f'{clist_col}9:{clist_col}209', firstrow=False)[0][clist_col.lower()].to_list()
+            clist = pwread(template, 'Dashboard', f'{clist_col}10:{clist_col}209', firstrow=False)[0][clist_col.lower()].to_list()
 
-        counterlist = pwread(template, 'Dashboard', f'{col}9:{col}209', firstrow=False)[0][col.lower()].to_list()
+        counterlist = pwread(template, 'Dashboard', f'{col}10:{col}209', firstrow=False)[0][col.lower()].to_list()
         indllist_colindex =  colindex + 1
         indllist_col = get_column_letter(indllist_colindex)
-        indlist = pwread(template, 'Dashboard', f'{indllist_col}9:{indllist_col}209', firstrow=False)[0][indllist_col.lower()].dropna().to_list()
+        indlist = pwread(template, 'Dashboard', f'{indllist_col}10:{indllist_col}209', firstrow=False)[0][indllist_col.lower()].dropna().to_list()
 
         data = imf_datatools.get_ecos_sdmx_data(dbname, clist, indlist, freq=freq, longformat=True)
-        if start is not None:
-            data = data[data['dates'].dt.year >= start]
-        if end is not None:
-            data = data[data['dates'].dt.year <= end]
-        df = pd.merge(df, data, on=['COUNTRY', 'dates'], how='outer')
+        if data is not None:
+            if start is not None:
+                data = data[data['dates'].dt.year >= start]
+            if end is not None:
+                data = data[data['dates'].dt.year <= end]
+            df = pd.merge(df, data, on=['COUNTRY', 'dates'], how='outer')
+        else:
+            errmsg = errmsg + dbname + indlist + 'not available'
     else:
         continue
 

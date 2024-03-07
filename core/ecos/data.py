@@ -12,13 +12,14 @@ import config as c
 
 class ecosdata(pd.DataFrame):
     def __init__(self, file=c.template, *args, **kwargs):
-        wb = xw.Book(c.template)
+        wb = xw.Book(file)
         ws = wb.sheets['Dashboard']
 
         sectioncol = ['B', 'F', 'J', 'N', 'R']
         df = pd.DataFrame()
         df['COUNTRY'] = ''
         df['dates'] = ''
+        errmsg = ''
 
         for col in sectioncol:
             dbname = ws.range(f'{col}3').value
@@ -36,29 +37,47 @@ class ecosdata(pd.DataFrame):
                 else:
                     clist_colindex = colindex - 1
                     clist_col = get_column_letter(clist_colindex)
-                    clist = pwread(c.template, 'Dashboard', f'{clist_col}9:{clist_col}209', firstrow=False)[0][
+                    clist = pwread(c.template, 'Dashboard', f'{clist_col}10:{clist_col}209', firstrow=False)[0][
                         clist_col.lower()].to_list()
 
-                counterlist = pwread(c.template, 'Dashboard', f'{col}9:{col}209', firstrow=False)[0][
+                counterlist = pwread(c.template, 'Dashboard', f'{col}10:{col}209', firstrow=False)[0][
                     col.lower()].to_list()
                 indllist_colindex = colindex + 1
                 indllist_col = get_column_letter(indllist_colindex)
-                indlist = pwread(c.template, 'Dashboard', f'{indllist_col}9:{indllist_col}209', firstrow=False)[0][
+                indlist = pwread(c.template, 'Dashboard', f'{indllist_col}10:{indllist_col}209', firstrow=False)[0][
                     indllist_col.lower()].dropna().to_list()
 
                 data = imf_datatools.get_ecos_sdmx_data(dbname, clist, indlist, freq=freq, longformat=True)
-                if start is not None:
-                    data = data[data['dates'].dt.year >= start]
-                if end is not None:
-                    data = data[data['dates'].dt.year <= end]
-                df = pd.merge(df, data, on=['COUNTRY', 'dates'], how='outer')
+                if data is not None:
+                    if start is not None:
+                        data = data[data['dates'].dt.year >= start]
+                    if end is not None:
+                        data = data[data['dates'].dt.year <= end]
+                    df = pd.merge(df, data, on=['COUNTRY', 'dates'], how='outer')
+                else:
+                    errmsg = errmsg + '\n' + dbname + ': ' + ', '.join(indlist) + '\n'
             else:
                 continue
 
+        print(errmsg)
         df.rename(columns={'COUNTRY': 'ifscode'}, inplace=True)
         df['ifscode'] = df['ifscode'].astype(int)
+        df['year'] = df['dates'].dt.year
+        df.drop(columns='dates', inplace=True)
+        # reorder the columns
+        first_columns = ['ifscode', 'year']
+        remaining_columns = [col for col in df.columns if col not in first_columns]
+        new_order = first_columns + remaining_columns
+        df = df[new_order]
+
         super().__init__(df, *args, **kwargs)
 
+    @property
+    def todf(self):
+        return pd.DataFrame(self)
 
+if __name__ == '__main__':
+    a = ecosdata()
+    # a.to_excel('output.xlsx', index=False)
 
 

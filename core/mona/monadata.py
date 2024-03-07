@@ -25,3 +25,6 @@ def monapload(version='latest', tab='P', keeplist=default['P']):
     data, mapping = pwread(dbpath + monatabdict[tab] + monameta[version] + '.xlsx')
     data = data[keeplist]
     return data
+
+if __name__ == '__main__':
+    monaload()
