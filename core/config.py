@@ -1,2 +1,7 @@
-dummyfile_default = ''
-dummyfile_own = ''
+
+imfattribute={
+    'roc2024': {
+        'var': 'roc2024',
+        'value': 1
+    }
+}
