@@ -15,7 +15,7 @@ import shutil
 # Step 2: retrieve the meta info into a dictionary
 # Step 3: parse dictionary and use it with imf_datatools to download data
 
-def _ecosuse(file=c.template):
+def _ecosuse(file: str = c.template, debug: bool = False):
     wb = xw.Book(file)
     ws = wb.sheets['Dashboard']
 
@@ -59,6 +59,7 @@ def _ecosuse(file=c.template):
                 if end is not None:
                     data = data[data['dates'].dt.year <= end]
                 df = pd.merge(df, data, on=['COUNTRY', 'dates'], how='outer')
+
             else:
                 errmsg = errmsg + '\n' + dbname + ': ' + ', '.join(indlist) + '\n'
         else:
@@ -66,7 +67,11 @@ def _ecosuse(file=c.template):
 
     print(errmsg)
     df.rename(columns={'COUNTRY': 'ifscode'}, inplace=True)
+    if debug:
+        print('Error1')
     df['ifscode'] = df['ifscode'].astype(int)
+    if debug:
+        print('Error2')
     df['year'] = df['dates'].dt.year
     df.drop(columns='dates', inplace=True)
     # reorder the columns
@@ -86,7 +91,7 @@ class EcosData(ImfFrame):
 
 
 class EcosSet:
-    def __init__(self, workbook: str = 'Data Pulling Template.xlsx'):
+    def __init__(self, workbook: str = 'Data Pulling Template.xlsx', debug = False):
         destination_file = os.path.join(os.getcwd(), workbook)
 
         if os.path.exists(destination_file):
@@ -97,7 +102,7 @@ class EcosSet:
         self.path = os.path.join(os.getcwd(), workbook)
         xw.Book(self.path)
 
-    def pull(self):
+    def pull(self, debug = debug):
         op = EcosData(
             data=self.path
         )
@@ -105,5 +110,5 @@ class EcosSet:
 
 
 if __name__ == '__main__':
-    a = EcosSet('temp.xlsx')
+    a = EcosSet('temp.xlsx', debug = True)
     data = a.pull()
