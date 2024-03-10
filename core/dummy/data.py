@@ -25,5 +25,5 @@ class Dummy(ImfFrame):
 
 if __name__ == '__main__':
     a = Dummy()
-    # b= a.inlist('ifscode',111)
+    b = a.inlist('ifscode', 111)
 

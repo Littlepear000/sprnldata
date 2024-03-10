@@ -88,43 +88,22 @@ class EcosData(ImfFrame):
 class EcosSet:
     def __init__(self, workbook: str = 'Data Pulling Template.xlsx'):
         destination_file = os.path.join(os.getcwd(), workbook)
+
         if os.path.exists(destination_file):
-            xw.Book(destination_file)
-            raise FileExistsError(f'Error: {workbook} already exists! Opening, please go ahead and check ... ')
+            print(f'Opening current {workbook} in the folder ... ')
         else:
             shutil.copyfile(c.template, destination_file)
-
+            print(f'{workbook} copied from template into the folder ... ')
         self.path = os.path.join(os.getcwd(), workbook)
         xw.Book(self.path)
 
     def pull(self):
-        return EcosData(self.path)
+        op = EcosData(
+            data=self.path
+        )
+        return op
 
 
 if __name__ == '__main__':
-    a = EcosSet('template1.xlsx')
-    df = a.pull()
-    df.to_excel('temp.xlsx', index=False)
-    df.lowervarlist()
-
-    import re
-
-    test = pd.DataFrame({'A': [1, 2, 3], 'a': [2, 3, 4], 'B': [3, 4, 5]})
-    oldname = test.columns.to_list()
-    pattern = re.compile('\W+')
-
-    # Dictionary to track the occurrence of each formatted column name
-    name_count = {}
-    newname = []
-    for name in oldname:
-        # Format the column name
-        formatted_name = re.sub(pattern, '_', str(name)).lower().strip("_")
-
-        # Increment count and modify name if it's a duplicate
-        if formatted_name in name_count:
-            name_count[formatted_name] += 1
-            formatted_name += f"_{name_count[formatted_name]}"
-        else:
-            name_count[formatted_name] = 0
-
-        newname.append(formatted_name)
+    a = EcosSet('temp.xlsx')
+    data = a.pull()
