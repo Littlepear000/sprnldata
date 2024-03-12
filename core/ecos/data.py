@@ -1,21 +1,20 @@
 from sprnldata.core.frame import ImfFrame
+import sprnldata.core.dummy.config as dum
+import sprnldata.core.ecos.config as c
 from pandaspro.core.frame import FramePro
 from swxl.pandaspro.core import pwread
 from openpyxl.utils import column_index_from_string, get_column_letter
 import pandas as pd
 import imf_datatools
 import xlwings as xw
-import sprnldata.core.dummy.config as dum
-import sprnldata.core.ecos.config as c
 import os
 import shutil
-
 
 # Step 1: read excel of Data Pulling Tool Main Dashboard
 # Step 2: retrieve the meta info into a dictionary
 # Step 3: parse dictionary and use it with imf_datatools to download data
 
-def _ecosuse(file: str = c.template, debug: bool = False):
+def _ecosuse(file: str = None, debug: bool = False):
     wb = xw.Book(file)
     ws = wb.sheets['Dashboard']
 
@@ -25,7 +24,7 @@ def _ecosuse(file: str = c.template, debug: bool = False):
     df['dates'] = ''
     errmsg = ''
 
-    for col in sectioncol:
+    for index, col in zip(range(5), sectioncol):
         dbname = ws.range(f'{col}3').value
         colindex = column_index_from_string(col)
         if dbname is not None:
@@ -41,18 +40,22 @@ def _ecosuse(file: str = c.template, debug: bool = False):
             else:
                 clist_colindex = colindex - 1
                 clist_col = get_column_letter(clist_colindex)
-                clist = pwread(c.template, 'Dashboard', f'{clist_col}10:{clist_col}209', firstrow=False)[0][
-                    clist_col.lower()].to_list()
+                clist = [int(c) for c in ws.range(f'{clist_col}10:{clist_col}209').value if c is not None and str(c).strip() != '' ]
 
-            counterlist = pwread(c.template, 'Dashboard', f'{col}10:{col}209', firstrow=False)[0][
+
+            counterlist = pwread(file, 'Dashboard', f'{col}10:{col}209', firstrow=False)[0][
                 col.lower()].to_list()
             indlist_colindex = colindex + 1
             indlist_col = get_column_letter(indlist_colindex)
-            indlist = pwread(c.template, 'Dashboard', f'{indlist_col}10:{indlist_col}209', firstrow=False)[0][
+            indlist = pwread(file, 'Dashboard', f'{indlist_col}10:{indlist_col}209', firstrow=False)[0][
                 indlist_col.lower()].dropna().to_list()
 
+            if debug:
+                print(f'Section {index+1}/5: imf_datatools.get_ecos_sdmx_data({dbname}, {clist}, {indlist}, freq={freq}, longformat=True)')
             data = imf_datatools.get_ecos_sdmx_data(dbname, clist, indlist, freq=freq, longformat=True)
+
             ## print notification message including time duration for pulling the data
+
             if data is not None:
                 if start is not None:
                     data = data[data['dates'].dt.year >= start]
@@ -61,37 +64,31 @@ def _ecosuse(file: str = c.template, debug: bool = False):
                 df = pd.merge(df, data, on=['COUNTRY', 'dates'], how='outer')
 
             else:
-                errmsg = errmsg + '\n' + dbname + ': ' + ', '.join(indlist) + '\n'
+                errmsg = errmsg + '\n' + f'{dbname} {indlist} NO data available' + '\n'
         else:
+            print(f'Section {index+1}/5: Skipped as Database (row3) not provided')
             continue
 
     print(errmsg)
     df.rename(columns={'COUNTRY': 'ifscode'}, inplace=True)
-    if debug:
-        print('Error1')
     df['ifscode'] = df['ifscode'].astype(int)
-    if debug:
-        print('Error2')
     df['year'] = df['dates'].dt.year
     df.drop(columns='dates', inplace=True)
-    # reorder the columns
-    first_columns = ['ifscode', 'year']
-    remaining_columns = [col for col in df.columns if col not in first_columns]
-    new_order = first_columns + remaining_columns
+    new_order = ['ifscode', 'year'] + [col for col in df.columns if col not in ['ifscode', 'year']]   # reorder the columns
     return df[new_order]
 
+
 class EcosData(ImfFrame):
-    def __init__(self, data=None, *args, **kwargs):
+    def __init__(self, data = None, debug: bool = False, *args, **kwargs):
         if isinstance(data, (pd.DataFrame, FramePro)):
             super().__init__(data=data, *args, **kwargs)
         else:
-            file = data if data is not None else c.template
-            result = _ecosuse(file=file)
+            result = _ecosuse(file=data, debug=debug)
             super().__init__(data=result, *args, **kwargs)
 
 
 class EcosSet:
-    def __init__(self, workbook: str = 'Data Pulling Template.xlsx', debug = False):
+    def __init__(self, workbook: str = 'Data Pulling Template.xlsx'):
         destination_file = os.path.join(os.getcwd(), workbook)
 
         if os.path.exists(destination_file):
@@ -102,13 +99,16 @@ class EcosSet:
         self.path = os.path.join(os.getcwd(), workbook)
         xw.Book(self.path)
 
-    def pull(self, debug = debug):
+    def pull(self, debug: bool = False):
         op = EcosData(
-            data=self.path
+            data=self.path,
+            debug=debug
         )
         return op
 
 
 if __name__ == '__main__':
-    a = EcosSet('temp.xlsx', debug = True)
-    data = a.pull()
+    a = EcosSet('temp.xlsx')
+    data = a.pull(debug=True)
+
+
