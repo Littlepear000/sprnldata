@@ -1,3 +1,4 @@
+import re
 from sprnldata.core.frame import ImfFrame
 import sprnldata.core.dummy.config as dum
 import sprnldata.core.ecos.config as c
@@ -40,15 +41,16 @@ def _ecosuse(file: str = None, debug: bool = False):
             else:
                 clist_colindex = colindex - 1
                 clist_col = get_column_letter(clist_colindex)
-                clist = [int(c) for c in ws.range(f'{clist_col}10:{clist_col}209').value if c is not None and str(c).strip() != '' ]
+                clist_raw = [int(c) for c in ws.range(f'{clist_col}10:{clist_col}209').value if c is not None and str(c).strip() != '' ]
+                clist_ifs = [c for c in clist_raw if isinstance(c, (int, float)) or (isinstance(c, str) and c.isdigit())]
+                clist_iso = [c for c in clist_raw if isinstance(c, str) and re.match('[A-Z]{3}', c)]
+                clist_name = [c for c in clist_raw if c not in (clist_ifs, clist_iso)]
 
 
-            counterlist = pwread(file, 'Dashboard', f'{col}10:{col}209', firstrow=False)[0][
-                col.lower()].to_list()
+            counterlist = [c for c in ws.range(f'{col}10:{col}209').value if c is not None]
             indlist_colindex = colindex + 1
             indlist_col = get_column_letter(indlist_colindex)
-            indlist = pwread(file, 'Dashboard', f'{indlist_col}10:{indlist_col}209', firstrow=False)[0][
-                indlist_col.lower()].dropna().to_list()
+            indlist = [i for i in ws.range(f'{indlist_col}10:{indlist_col}209').value if i is not None]
 
             if debug:
                 print(f'Section {index+1}/5: imf_datatools.get_ecos_sdmx_data({dbname}, {clist}, {indlist}, freq={freq}, longformat=True)')

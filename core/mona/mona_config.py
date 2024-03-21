@@ -1,4 +1,3 @@
-dbpath = "Q:/DATA/SPRNL/Users/Shelley/databases/mona/raw/"
 
 monarename = {
     'arrangement_number': 'arrnum',
