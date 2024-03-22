@@ -1,10 +1,6 @@
 from datetime import datetime
-
-print(datetime.now(), 'data import start')
 import re
-print(datetime.now(), 're')
 from sprnldata.core.frame import ImfFrame
-print(datetime.now(), 'imfframe')
 import sprnldata.core.dummy.config as dum
 import sprnldata.core.ecos.config as c
 from pandaspro.core.frame import FramePro
