@@ -4,7 +4,7 @@ from pandaspro import FramePro
 from datetime import datetime
 from sprnldata.core.mona.config import *
 
-def _getlatestv(tab='d'):
+def getlatestv(tab='d'):
     files = os.listdir(dbpath)
     dates = []
     for file in files:
@@ -17,14 +17,14 @@ def _getlatestv(tab='d'):
 
 
 class MonaData(FramePro):
-    def __init__(self, version='latest', tab='d', *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if version == 'latest':
-            filename = _getlatestv(tab=tab)
-        else:
-            filename = f'{monatab[tab]}_{version}.xlsx'
-        df = pd.read_excel(f'{dbpath}\{filename}')
+
+
+
+
 
 
 if __name__ == '__main__':
-    a = MonaData()
+    # a = getlatestv(tab='d')
+    b = MonaData({'a': [1, 2, 3], 'b': [3, 4, 5]})
