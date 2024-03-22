@@ -1,5 +1,5 @@
 import pandas as pd
-from core.mona.config import monatab, dbpath
+from sprnldata.core.mona.config import monatab, dbpath
 from sprnldata.core.mona.data import MonaData, getlatestv
 import pandaspro
 

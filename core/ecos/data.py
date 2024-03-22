@@ -1,15 +1,22 @@
+from datetime import datetime
+
+print(datetime.now(), 'data import start')
 import re
+print(datetime.now(), 're')
 from sprnldata.core.frame import ImfFrame
+print(datetime.now(), 'imfframe')
 import sprnldata.core.dummy.config as dum
 import sprnldata.core.ecos.config as c
 from pandaspro.core.frame import FramePro
-from swxl.pandaspro.core import pwread
 from openpyxl.utils import column_index_from_string, get_column_letter
 import pandas as pd
 import imf_datatools
 import xlwings as xw
 import os
 import shutil
+
+print(datetime.now(), 'data import end')
+
 
 # Step 1: read excel of Data Pulling Tool Main Dashboard
 # Step 2: retrieve the meta info into a dictionary
@@ -41,11 +48,12 @@ def _ecosuse(file: str = None, debug: bool = False):
             else:
                 clist_colindex = colindex - 1
                 clist_col = get_column_letter(clist_colindex)
-                clist_raw = [int(c) for c in ws.range(f'{clist_col}10:{clist_col}209').value if c is not None and str(c).strip() != '' ]
-                clist_ifs = [c for c in clist_raw if isinstance(c, (int, float)) or (isinstance(c, str) and c.isdigit())]
+                clist_raw = [int(c) for c in ws.range(f'{clist_col}10:{clist_col}209').value if
+                             c is not None and str(c).strip() != '']
+                clist_ifs = [c for c in clist_raw if
+                             isinstance(c, (int, float)) or (isinstance(c, str) and c.isdigit())]
                 clist_iso = [c for c in clist_raw if isinstance(c, str) and re.match('[A-Z]{3}', c)]
                 clist_name = [c for c in clist_raw if c not in (clist_ifs, clist_iso)]
-
 
             counterlist = [c for c in ws.range(f'{col}10:{col}209').value if c is not None]
             indlist_colindex = colindex + 1
@@ -53,7 +61,8 @@ def _ecosuse(file: str = None, debug: bool = False):
             indlist = [i for i in ws.range(f'{indlist_col}10:{indlist_col}209').value if i is not None]
 
             if debug:
-                print(f'Section {index+1}/5: imf_datatools.get_ecos_sdmx_data({dbname}, {clist}, {indlist}, freq={freq}, longformat=True)')
+                print(
+                    f'Section {index + 1}/5: imf_datatools.get_ecos_sdmx_data({dbname}, {clist}, {indlist}, freq={freq}, longformat=True)')
             data = imf_datatools.get_ecos_sdmx_data(dbname, clist, indlist, freq=freq, longformat=True)
 
             ## print notification message including time duration for pulling the data
@@ -68,7 +77,7 @@ def _ecosuse(file: str = None, debug: bool = False):
             else:
                 errmsg = errmsg + '\n' + f'{dbname} {indlist} NO data available' + '\n'
         else:
-            print(f'Section {index+1}/5: Skipped as Database (row3) not provided')
+            print(f'Section {index + 1}/5: Skipped as Database (row3) not provided')
             continue
 
     print(errmsg)
@@ -76,12 +85,13 @@ def _ecosuse(file: str = None, debug: bool = False):
     df['ifscode'] = df['ifscode'].astype(int)
     df['year'] = df['dates'].dt.year
     df.drop(columns='dates', inplace=True)
-    new_order = ['ifscode', 'year'] + [col for col in df.columns if col not in ['ifscode', 'year']]   # reorder the columns
+    new_order = ['ifscode', 'year'] + [col for col in df.columns if
+                                       col not in ['ifscode', 'year']]  # reorder the columns
     return df[new_order]
 
 
 class EcosData(ImfFrame):
-    def __init__(self, data = None, debug: bool = False, *args, **kwargs):
+    def __init__(self, data=None, debug: bool = False, *args, **kwargs):
         if isinstance(data, (pd.DataFrame, FramePro)):
             super().__init__(data=data, *args, **kwargs)
         else:
@@ -107,10 +117,3 @@ class EcosSet:
             debug=debug
         )
         return op
-
-
-if __name__ == '__main__':
-    a = EcosSet('temp.xlsx')
-    data = a.pull(debug=True)
-
-
