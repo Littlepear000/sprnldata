@@ -1,8 +1,9 @@
-import pandas as pd
 import os
 from pandaspro import FramePro
 from datetime import datetime
 from sprnldata.core.mona.config import *
+from sprnldata.core.frame import ImfFrame
+
 
 def getlatestv(tab='d'):
     files = os.listdir(dbpath)
@@ -16,13 +17,9 @@ def getlatestv(tab='d'):
     return f"{monatab[tab]}_{datetime.strftime(max(dates), '%Y-%m-%d')}.xlsx"
 
 
-class MonaData(FramePro):
+class MonaData(ImfFrame):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-
-
-
 
 
 if __name__ == '__main__':

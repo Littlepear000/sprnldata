@@ -11,9 +11,6 @@ import xlwings as xw
 import os
 import shutil
 
-print(datetime.now(), 'data import end')
-
-
 # Step 1: read excel of Data Pulling Tool Main Dashboard
 # Step 2: retrieve the meta info into a dictionary
 # Step 3: parse dictionary and use it with imf_datatools to download data
