@@ -18,8 +18,7 @@ def getlatestv(tab='d'):
 
 
 class MonaData(ImfFrame):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    pass
 
 
 if __name__ == '__main__':

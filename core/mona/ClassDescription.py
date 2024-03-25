@@ -23,13 +23,15 @@ def prog_dummy(df):
 
 class MonaDes(MonaData):
     def __init__(self, *args, version='latest', **kwargs):
-        super().__init__(*args, **kwargs)
-        self.dbtype = 'd'
-        if self.empty:
+        dbtype = 'd'
+        check = MonaData(*args, **kwargs).empty
+        if not check:
+            super().__init__(*args, **kwargs)
+        else:
             if version == 'latest':
-                filename = getlatestv(tab=self.dbtype)
+                filename = getlatestv(tab=dbtype)
             else:
-                filename = f'{monatab[self.dbtype]}_{version}.xlsx'
+                filename = f'{monatab[dbtype]}_{version}.xlsx'
 
             raw = pd.read_excel(f'{dbpath}/{filename}')
             raw['Review Sequence'] = raw['Review Sequence'].apply(lambda x: x.strip())
@@ -46,9 +48,8 @@ class MonaDes(MonaData):
             raw['country'] = raw['country'].apply(lambda x: x.title())
 
             df = prog_dummy(raw)
-
-            for col, values in df.items():
-                self[col] = values
+            super().__init__(df, *args, **kwargs)
+        self.dbtype = dbtype
 
     @property
     def _constructor(self):
@@ -57,3 +58,6 @@ class MonaDes(MonaData):
 
 if __name__ == '__main__':
     a = MonaDes(version='2024-01-24')
+    mask = a['arrnum']==570
+    print('run')
+    b = a[mask]
