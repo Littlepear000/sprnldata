@@ -20,6 +20,12 @@ def prog_dummy(df):
         df[new_column_name] = df[new_column_name].fillna(0)
     return df
 
+def get_weo(dbname: str ='WEO_WEO_PUBLISHED', varlist: list =None):
+    weo = imf_datatools.get_ecos_sdmx_data(dbname, clist, indlist, freq=freq, longformat=True)
+
+# 1. df.get_weo(varlist)
+# 2. df.get_vintage(varlist)
+# 2. df.expand(from, to)
 
 class MonaDes(MonaData):
     def __init__(self, *args, version='latest', **kwargs):
@@ -59,5 +65,4 @@ class MonaDes(MonaData):
 if __name__ == '__main__':
     a = MonaDes()
     mask = a['arrnum']==570
-    print('run')
     b = a[mask]
