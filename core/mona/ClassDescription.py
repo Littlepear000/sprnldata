@@ -57,7 +57,7 @@ class MonaDes(MonaData):
 
 
 if __name__ == '__main__':
-    a = MonaDes(version='2024-01-24')
+    a = MonaDes()
     mask = a['arrnum']==570
     print('run')
     b = a[mask]
