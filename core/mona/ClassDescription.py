@@ -1,5 +1,6 @@
 import pandas as pd
 import pandaspro as cpd
+import imf_datatools
 from sprnldata.core.mona.config import *
 from sprnldata.core.mona.data import MonaData, getlatestv
 from sprnldata.core.dummy.config import roc2018raw, roc2025raw
@@ -20,8 +21,6 @@ def prog_dummy(df):
         df[new_column_name] = df[new_column_name].fillna(0)
     return df
 
-def get_weo(dbname: str ='WEO_WEO_PUBLISHED', varlist: list =None):
-    weo = imf_datatools.get_ecos_sdmx_data(dbname, clist, indlist, freq=freq, longformat=True)
 
 # 1. df.get_weo(varlist)
 # 2. df.get_vintage(varlist)
@@ -57,6 +56,15 @@ class MonaDes(MonaData):
             super().__init__(df, *args, **kwargs)
         self.dbtype = dbtype
 
+    def get_weo(self, varlist: list, dbname: str = 'WEO_WEO_PUBLISHED'):
+        clist = list(self['ifscode'].unique())
+        weo = imf_datatools.get_ecos_sdmx_data(dbname, clist, varlist, freq='A', longformat=True)
+        weo.rename(columns={'COUNTRY': 'ifscode'}, inplace=True)
+        weo['ifscode'] = weo['ifscode'].astype(int)
+        weo['year'] = weo['dates'].dt.year
+        weo.drop(columns='dates', inplace=True)
+        df = pd.merge(self, weo, on=['ifscode', ''])
+
     @property
     def _constructor(self):
         return MonaDes
@@ -65,4 +73,4 @@ class MonaDes(MonaData):
 if __name__ == '__main__':
     a = MonaDes()
     mask = a['arrnum']==570
-    b = a[mask]
+    b = a.get_weo([])
