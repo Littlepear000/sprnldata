@@ -72,9 +72,9 @@ class MonaDes(MonaData):
                 'freq': 'A'
             }
         }
-        weo = EcosData(pull_dict=pull_dict)
-        # df = pd.merge(self, weo, on=['ifscode', ''])
-        return weo
+        weo = EcosData(pull_dict=pull_dict).rename(columns={'year':'T'})
+        df = pd.merge(self, weo, on=['ifscode', 'T'], how='left')
+        return df
 
     @property
     def _constructor(self):
@@ -84,4 +84,4 @@ class MonaDes(MonaData):
 if __name__ == '__main__':
     a = MonaDes()
     mask = a['arrnum']==570
-    b = a.get_weo(['NGDP'])
+    b = a.get_weo(['NGDP', 'NGDPD'])
