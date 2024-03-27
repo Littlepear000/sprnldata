@@ -1,6 +1,8 @@
 import pandas as pd
 import pandaspro as cpd
 import imf_datatools
+import xlwings as xw
+import re
 from sprnldata.core.mona.config import *
 from sprnldata.core.mona.data import MonaData, getlatestv
 from sprnldata.core.dummy.config import roc2018raw, roc2025raw
@@ -22,10 +24,15 @@ def prog_dummy(df):
         df[new_column_name] = df[new_column_name].fillna(0)
     return df
 
+def expand_row(row, start: str = 'start', end: str = 'end'):
+    pattern = '(start|end|[Tt]\s*[+-]\s*\d)'
+    if re.match(pattern, start, re.IGNORECASE) and re.match(pattern, end, re.IGNORECASE):
+        m = 0 if start == 'start' else int(re.findall('\d', start)[0])
+        n = row['end_year']-row['app_year'] if end == 'end' else int(re.findall('\d', end)[0])
 
 # 1. df.get_weo(varlist)
 # 2. df.get_vintage(varlist)
-# 2. df.expand(from, to)
+# 3. df.expand(from, to)
 
 class MonaDes(MonaData):
     def __init__(self, *args, version='latest', **kwargs):
@@ -76,6 +83,25 @@ class MonaDes(MonaData):
         df = pd.merge(self, weo, on=['ifscode', 'T'], how='left')
         return df
 
+    def get_weo_from_file(
+            self,
+            filename: str,
+            sheetname: str =None
+    ):
+        sheetname = xw.Book(filename).sheets[0].name if not sheetname else sheetname
+        weo = pd.read_excel(filename, sheetname)
+        if 'ifscode' in weo.columns and 'year' in weo.columns:
+            weo.rename(columns={'year': 'T'}, inplace='True')
+            df = pd.merge(self, weo, on=['ifscode', 'T'], how='left')
+        else:
+            print('Must have ifscode and year')
+            df = None
+        return  df
+
+
+
+
+
     @property
     def _constructor(self):
         return MonaDes
@@ -85,3 +111,5 @@ if __name__ == '__main__':
     a = MonaDes()
     mask = a['arrnum']==570
     b = a.get_weo(['NGDP', 'NGDPD'])
+    c = b.get_weo(['GGR'], dbname='WEO_WEO_LIVE')
+    d = a.get_weo_from_file(r'C:\Users\xli7\OneDrive - International Monetary Fund (PRD)\General - SPR-SPRNL-2024 ROC – Diagnostic chapter\Data\Macroeconomic output\Macroecon Charts.xlsx', 'alldata')
