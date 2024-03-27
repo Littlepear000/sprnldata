@@ -4,6 +4,7 @@ import imf_datatools
 from sprnldata.core.mona.config import *
 from sprnldata.core.mona.data import MonaData, getlatestv
 from sprnldata.core.dummy.config import roc2018raw, roc2025raw
+from sprnldata.core.ecos.data import EcosData
 
 def account_match(value):
     for key, values_list in account_map.items():
@@ -56,14 +57,24 @@ class MonaDes(MonaData):
             super().__init__(df, *args, **kwargs)
         self.dbtype = dbtype
 
-    def get_weo(self, varlist: list, dbname: str = 'WEO_WEO_PUBLISHED'):
-        clist = list(self['ifscode'].unique())
-        weo = imf_datatools.get_ecos_sdmx_data(dbname, clist, varlist, freq='A', longformat=True)
-        weo.rename(columns={'COUNTRY': 'ifscode'}, inplace=True)
-        weo['ifscode'] = weo['ifscode'].astype(int)
-        weo['year'] = weo['dates'].dt.year
-        weo.drop(columns='dates', inplace=True)
-        df = pd.merge(self, weo, on=['ifscode', ''])
+    def get_weo(
+            self,
+            varlist: list,
+            dbname: str = 'WEO_WEO_PUBLISHED'
+    ):
+        # Under Mona cir, only Annual Freq data requested
+        # ... and always pull all countries
+        pull_dict = {
+            'Database 1': {
+                'dbname': dbname,
+                'indlist': varlist,
+                'clist': list(self['ifscode'].unique()),
+                'freq': 'A'
+            }
+        }
+        weo = EcosData(pull_dict=pull_dict)
+        # df = pd.merge(self, weo, on=['ifscode', ''])
+        return weo
 
     @property
     def _constructor(self):
@@ -73,4 +84,4 @@ class MonaDes(MonaData):
 if __name__ == '__main__':
     a = MonaDes()
     mask = a['arrnum']==570
-    b = a.get_weo([])
+    b = a.get_weo(['NGDP'])

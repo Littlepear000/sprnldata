@@ -19,24 +19,30 @@ def _ecosuse(
         pull_dict: dict = None,
         debug: bool = False
 ):
+    errmsg = ''
+    df = pd.DataFrame()
+    df['COUNTRY'] = ''
+    df['dates'] = ''
+
     for key in pull_dict.keys():
         dbname = pull_dict[key]['dbname']
         clist = pull_dict[key]['clist']
         indlist = pull_dict[key]['indlist']
         freq = pull_dict[key]['freq']
+        start = pull_dict[key]['start'] if 'start' in pull_dict[key].keys() else None
+        end = pull_dict[key]['end'] if 'end' in pull_dict[key].keys() else None
 
         if debug:
             print(
-                f'Section {index + 1}/5: imf_datatools.get_ecos_sdmx_data({dbname}, {clist}, {indlist}, freq={freq}, longformat=True)')
-
+                f'{key}/{len(pull_dict.keys())}: imf_datatools.get_ecos_sdmx_data({dbname}, {clist}, {indlist}, freq={freq}, longformat=True)')
         # Only triggered when using EcosSet
-        if not dbname:
+        if dbname is not None:
             data = imf_datatools.get_ecos_sdmx_data(dbname, clist, indlist, freq=freq, longformat=True)
         else:
             print(f'{key}/{len(pull_dict.keys())}: Skipped, Check Excel Template')
-        continue
-        ## print notification message including time duration for pulling the data
+            continue
 
+        ## print notification message including time duration for pulling the data
         if data is not None:
             if start is not None:
                 data = data[data['dates'].dt.year >= start]
@@ -52,8 +58,7 @@ def _ecosuse(
     df['ifscode'] = df['ifscode'].astype(int)
     df['year'] = df['dates'].dt.year
     df.drop(columns='dates', inplace=True)
-    new_order = ['ifscode', 'year'] + [col for col in df.columns if
-                                       col not in ['ifscode', 'year']]  # reorder the columns
+    new_order = ['ifscode', 'year'] + [col for col in df.columns if col not in ['ifscode', 'year']]  # reorder the columns
     return df[new_order]
 
 
@@ -97,11 +102,6 @@ class EcosSet:
         ws = wb.sheets['Dashboard']
 
         sectioncol = ['B', 'F', 'J', 'N', 'R']
-        df = pd.DataFrame()
-        df['COUNTRY'] = ''
-        df['dates'] = ''
-        errmsg = ''
-
         for index, col in zip(range(5), sectioncol):
             pull_dict[f'Database {index + 1}'] = {}
             dbname = ws.range(f'{col}3').value
@@ -135,6 +135,8 @@ class EcosSet:
             pull_dict[f'Database {index + 1}']['clist'] = clist
             pull_dict[f'Database {index + 1}']['indlist'] = indlist
             pull_dict[f'Database {index + 1}']['freq'] = freq
+            pull_dict[f'Database {index + 1}']['start'] = start
+            pull_dict[f'Database {index + 1}']['end'] = end
 
         self.pull_dict = pull_dict
 
