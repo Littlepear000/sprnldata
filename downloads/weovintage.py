@@ -4,6 +4,7 @@ import datetime
 import time
 import sprnldata.core.dummy.config as dum
 
+
 vintagelist = [
     'WEO_WEOApr2002Pub',
     'WEO_WEOApr2003Pub',
@@ -72,19 +73,11 @@ def pull_vintage(var_list):
     df = df[['ifscode', 'vintage_year', 'year'] + [var.lower() for var in var_list]]
 
     ### Generate commonly used variables
-    addvars = ['pfb_gdp', 'iar_bmgs']
-    # Primary fiscal balance
-    df['pfb_gdp'] = (df['ggr'] - df['ggx'] + df['ggei']) / df['ngdp'] * 100
-    # Reserves in months of imports
-    df['iar_bmgs'] = df['iar_bp6'] / (df['bmgs_bp6'] / 12)
-
-    final = df.melt(id_vars=['ifscode', 'vintage_year', 'year'],
-                    value_vars=[var.lower() for var in var_list] + addvars,
-                    var_name='indicator',
-                    value_name='value').dropna(subset=['value'])
+    df['pfb_gdp'] = (df['ggr'] - df['ggx'] + df['ggei']) / df['ngdp'] * 100     # Primary fiscal balance
+    df['iar_bmgs'] = df['iar_bp6'] / (df['bmgs_bp6'] / 12)     # Reserves in months of imports
 
     timestamp = datetime.datetime.now().strftime('%Y%m%d')
-    final.to_csv(f'C:/Users/xli7/OneDrive - International Monetary Fund (PRD)/Databases/ECOS/WEOvintages/WEOvintages_{timestamp}.csv')
+    df.to_csv(f'C:/Users/xli7/OneDrive - International Monetary Fund (PRD)/Databases/ECOS/WEOvintages/WEOvintages_{timestamp}.csv', index=False)
     endtime = time.time()
     print(f'Download complete. Time Duration: {round((endtime-starttime)/60, 1)}min')
 
@@ -92,5 +85,4 @@ def pull_vintage(var_list):
 if __name__ == '__main__':
     # vintagelist = ['WEO_WEOApr2024Pub', 'WEO_WEOApr2024Pub']
     # varlist = ['GGR', 'GGX', 'GGEI', 'IAR_BP6', 'BMGS_BP6', 'NGDP']
-    a = pull_vintage(varlist)
-
+    pull_vintage(varlist)

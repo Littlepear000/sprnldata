@@ -3,20 +3,20 @@ import pandas as pd
 
 
 def myecosuse(
-        pull_dict: dict = None,
+        meta_dict: dict = None,
         debug: bool = False
 ):
     """
     Describe the purpose of the function and what it does.
 
-    :param pull_dict: A dictionary that contains meta data information to download different databases.
+    :param meta_dict: A dictionary that contains metadata information to download different databases.
                       Default values: freq='A', start=None, end=None.
                       Required values: dbname, clist, indlist
     :param debug: If True, the function will print debugging information to help trace its operation.
     :return: A dataframe that combines data from all specified databases.
 
     Example:
-    >>> pull_dict = {
+    >>> meta_dict = {
     'Database 1':{
         'dbname': 'WEO_WEO_PUBLISHED',
         'clist': [111, 112],
@@ -34,7 +34,7 @@ def myecosuse(
         'end': 2020
         }
     }
-    >>> result = myecosuse(pull_dict, debug=True)
+    >>> result = myecosuse(meta_dict, debug=True)
     >>> print(result)
     """
     errmsg = ''
@@ -42,22 +42,22 @@ def myecosuse(
     df['COUNTRY'] = ''
     df['dates'] = ''
 
-    for key in pull_dict.keys():
-        dbname = pull_dict[key]['dbname']
-        clist = pull_dict[key]['clist']
-        indlist = pull_dict[key]['indlist']
-        freq = pull_dict[key]['freq']
-        start = pull_dict[key]['start'] if 'start' in pull_dict[key].keys() else None
-        end = pull_dict[key]['end'] if 'end' in pull_dict[key].keys() else None
+    for key in meta_dict.keys():
+        dbname = meta_dict[key]['dbname']
+        clist = meta_dict[key]['clist']
+        indlist = meta_dict[key]['indlist']
+        freq = meta_dict[key]['freq']
+        start = meta_dict[key]['start'] if 'start' in meta_dict[key].keys() else None
+        end = meta_dict[key]['end'] if 'end' in meta_dict[key].keys() else None
 
         if debug:
             print(
-                f'{key}/{len(pull_dict.keys())}: imf_datatools.get_ecos_sdmx_data({dbname}, {clist}, {indlist}, freq={freq}, longformat=True)')
+                f'{key}/{len(meta_dict.keys())}: imf_datatools.get_ecos_sdmx_data({dbname}, {clist}, {indlist}, freq={freq}, longformat=True)')
         # Only triggered when using EcosSet
         if dbname is not None:
             data = imf_datatools.get_ecos_sdmx_data(dbname, clist, indlist, freq=freq, longformat=True)
         else:
-            print(f'{key}/{len(pull_dict.keys())}: Skipped, Check Excel Template')
+            print(f'{key}/{len(meta_dict.keys())}: Skipped, Check Excel Template')
             continue
 
         ## print notification message including time duration for pulling the data
@@ -84,7 +84,7 @@ if __name__ == '__main__':
         'Database 1': {
             'dbname': 'WEO_WEO_PUBLISHED',
             'clist': [111, 112],
-            'indlist': ['NGDP', 'NGDPD'],
+            'indlist': ['NGDP', 'IAR_BP6'],
             'freq': 'A',
             'start': 2000,
             'end': 2020

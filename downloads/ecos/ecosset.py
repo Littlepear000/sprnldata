@@ -1,4 +1,3 @@
-import re
 import sprnldata.core.dummy.config as dum
 import sprnldata.downloads.ecos.config as c
 from sprnldata.utils.myecosuse import myecosuse
@@ -9,15 +8,15 @@ import shutil
 import datetime
 import time
 
-folder = r'C:\Users\xli7\OneDrive - International Monetary Fund (PRD)\Databases\ECOS\Ecos'
+folder_ecos = r'C:\Users\xli7\OneDrive - International Monetary Fund (PRD)\Databases\ECOS\Ecos'
 
 # Step 1: read excel of Data Pulling Tool Main Dashboard
 # Step 2: retrieve the meta info into a dictionary
 # Step 3: parse dictionary and use it with imf_datatools to download data
 
-def _update_log(timestamp, dict):
-    log_entry = f"{timestamp}\n===========================\n{str(dict)}\n"
-    log_file_path = os.path.join(folder, 'templates', 'log.txt')
+def _update_log(timestamp, logdict):
+    log_entry = f"{timestamp}\n===========================\n{str(logdict)}\n"
+    log_file_path = os.path.join(folder_ecos, 'templates', 'log.txt')
 
     if os.path.exists(log_file_path):
         with open(log_file_path, 'r') as file:
@@ -54,6 +53,7 @@ class EcosSet:
         if os.path.exists(destination_file):
             print(f'Opening current {workbook} in the folder ... ')
         else:
+            # noinspection PyUnboundLocalVariable
             shutil.copyfile(c.template, destination_file)
             print(f'{workbook} copied from template into the folder ... ')
         self.path = os.path.join(os.getcwd(), workbook)
@@ -80,18 +80,17 @@ class EcosSet:
             else:
                 clist_colindex = colindex - 1
                 clist_col = get_column_letter(clist_colindex)
-                clist_raw = [int(c) for c in ws.range(f'{clist_col}10:{clist_col}209').value if
-                             c is not None and str(c).strip() != '']
-                clist_ifs = [c for c in clist_raw if
-                             isinstance(c, (int, float)) or (isinstance(c, str) and c.isdigit())]
-                clist_iso = [c for c in clist_raw if isinstance(c, str) and re.match('[A-Z]{3}', c)]
-                clist_name = [c for c in clist_raw if c not in (clist_ifs, clist_iso)]
+                clist_raw = [int(country) for country in ws.range(f'{clist_col}10:{clist_col}209').value if
+                             country is not None and str(country).strip() != '']
+                clist_ifs = [country for country in clist_raw if
+                             isinstance(country, (int, float)) or (isinstance(country, str) and country.isdigit())]
+                #clist_iso = [c for c in clist_raw if isinstance(c, str) and re.match('[A-Z]{3}', c)]
                 clist = clist_ifs
                 ###############################################
-                # Furture update: match iso and name to ifscode
+                # Future update: match iso and name to ifscode
                 ###############################################
 
-            counterlist = [c for c in ws.range(f'{col}10:{col}209').value if c is not None]
+            #counterlist = [c for c in ws.range(f'{col}10:{col}209').value if c is not None]
             indlist_colindex = colindex + 1
             indlist_col = get_column_letter(indlist_colindex)
             indlist = [i for i in ws.range(f'{indlist_col}10:{indlist_col}209').value if i is not None]
@@ -108,17 +107,22 @@ class EcosSet:
     def pull(self, debug: bool = False):
         starttime = time.time()
         data = myecosuse(
-            pull_dict=self.pull_dict,
+            meta_dict=self.pull_dict,
             debug=debug
         )
+        data.columns = data.columns.str.replace('.A', '', regex=False).str.lower()
+
+        ### Generate commonly used variables
+        data['pfb_gdp'] = (data['ggr'] - data['ggx'] + data['ggei']) / data['ngdp'] * 100  # Primary fiscal balance
+        data['iar_bmgs'] = data['iar_bp6'] / (data['bmgs_bp6'] / 12)  # Reserves in months of imports
 
         timestamp = datetime.datetime.now().strftime('%Y%m%d')
-        _update_log(timestamp=timestamp, dict=self.pull_dict)
-        data.to_csv(os.path.join(folder, f'ecosdata_{timestamp}.csv'), index=False)
+        _update_log(timestamp=timestamp, logdict=self.pull_dict)
+        data.to_csv(os.path.join(folder_ecos, f'ecosdata_{timestamp}.csv'), index=False)
         endtime = time.time()
         print(f'Download completed. Time Duration: {round((endtime-starttime)/60, 1)}min')
 
 
 if __name__ == '__main__':
-    a = EcosSet(f'{folder}/templates/template_20240420.xlsx')
+    a = EcosSet(f'{folder_ecos}/templates/template_20240421.xlsx')
     b = a.pull()
