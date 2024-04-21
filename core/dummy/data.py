@@ -13,7 +13,7 @@ class Dummy(ImfFrame):
             # w_aggregate = dummyc.inlist('w_aggregate', 1)['ifscode'].tolist()
             # wo_aggregate = dummyc.inlist('wo_aggregate', 1)['ifscode'].tolist()
         else:
-            dummyraw = pwread(c.programdummy_file, 'ROC2024')[0]
+            dummyraw = pwread(c.rocdummy_file, 'ROC2024')[0]
         return dummyraw
 
     def __init__(self, data=None, engine='country', *args, **kwargs):

@@ -1,94 +1,56 @@
-from datetime import datetime
 import re
-from sprnldata.core.frame import ImfFrame
 import sprnldata.core.dummy.config as dum
-import sprnldata.core.ecos.config as c
-from pandaspro.core.frame import FramePro
+import sprnldata.downloads.ecos.config as c
+from sprnldata.utils.myecosuse import myecosuse
 from openpyxl.utils import column_index_from_string, get_column_letter
-import pandas as pd
-import imf_datatools
 import xlwings as xw
 import os
 import shutil
+import datetime
+import time
+
+folder = r'C:\Users\xli7\OneDrive - International Monetary Fund (PRD)\Databases\ECOS\Ecos'
 
 # Step 1: read excel of Data Pulling Tool Main Dashboard
 # Step 2: retrieve the meta info into a dictionary
 # Step 3: parse dictionary and use it with imf_datatools to download data
 
-def _ecosuse(
-        pull_dict: dict = None,
-        debug: bool = False
-):
-    errmsg = ''
-    df = pd.DataFrame()
-    df['COUNTRY'] = ''
-    df['dates'] = ''
+def _update_log(timestamp, dict):
+    log_entry = f"{timestamp}\n===========================\n{str(dict)}\n"
+    log_file_path = os.path.join(folder, 'templates', 'log.txt')
 
-    for key in pull_dict.keys():
-        dbname = pull_dict[key]['dbname']
-        clist = pull_dict[key]['clist']
-        indlist = pull_dict[key]['indlist']
-        freq = pull_dict[key]['freq']
-        start = pull_dict[key]['start'] if 'start' in pull_dict[key].keys() else None
-        end = pull_dict[key]['end'] if 'end' in pull_dict[key].keys() else None
+    if os.path.exists(log_file_path):
+        with open(log_file_path, 'r') as file:
+            lines = file.readlines()
 
-        if debug:
-            print(
-                f'{key}/{len(pull_dict.keys())}: imf_datatools.get_ecos_sdmx_data({dbname}, {clist}, {indlist}, freq={freq}, longformat=True)')
-        # Only triggered when using EcosSet
-        if dbname is not None:
-            data = imf_datatools.get_ecos_sdmx_data(dbname, clist, indlist, freq=freq, longformat=True)
+        entry_index = None
+        end_index = None
+        for i, line in enumerate(lines):
+            if line.strip() == timestamp:
+                entry_index = i
+            elif entry_index is not None and line.strip() and line.strip().isdigit() and len(line.strip()) == 8:
+                end_index = i - 1
+                break
+
+        if entry_index is not None and end_index is not None:
+            lines = lines[:entry_index] + [log_entry] + lines[end_index:]
+        elif entry_index is not None:
+            lines = lines[:entry_index] + [log_entry]
         else:
-            print(f'{key}/{len(pull_dict.keys())}: Skipped, Check Excel Template')
-            continue
+            lines.append(log_entry)
+    else:
+        lines = [log_entry]
 
-        ## print notification message including time duration for pulling the data
-        if data is not None:
-            if start is not None:
-                data = data[data['dates'].dt.year >= start]
-            if end is not None:
-                data = data[data['dates'].dt.year <= end]
-            df = pd.merge(df, data, on=['COUNTRY', 'dates'], how='outer')
-
-        else:
-            errmsg = errmsg + '\n' + f'{dbname} {indlist} NO data available' + '\n'
-
-    print(errmsg)
-    df.rename(columns={'COUNTRY': 'ifscode'}, inplace=True)
-    df['ifscode'] = df['ifscode'].astype(int)
-    df['year'] = df['dates'].dt.year
-    df.drop(columns='dates', inplace=True)
-    new_order = ['ifscode', 'year'] + [col for col in df.columns if col not in ['ifscode', 'year']]  # reorder the columns
-    return df[new_order]
-
-
-class EcosData(ImfFrame):
-    def __init__(
-            self,
-            *args,
-            pull_dict: dict = None,
-            debug: bool = False,
-            **kwargs
-    ):
-        check = ImfFrame(*args, **kwargs)
-        if check.empty:
-            result = _ecosuse(
-                pull_dict=pull_dict,
-                debug=debug
-            )
-            super().__init__(result, *args, **kwargs)
-        else:
-            super().__init__(*args, **kwargs)
+    with open(log_file_path, 'w') as file:
+        file.writelines(lines)
 
 
 class EcosSet:
     def __init__(
             self,
-            workbook: str = 'Data Pulling Template.xlsx',
-
+            workbook: str = 'Data Pulling Template.xlsx'
     ):
         destination_file = os.path.join(os.getcwd(), workbook)
-
         if os.path.exists(destination_file):
             print(f'Opening current {workbook} in the folder ... ')
         else:
@@ -96,12 +58,11 @@ class EcosSet:
             print(f'{workbook} copied from template into the folder ... ')
         self.path = os.path.join(os.getcwd(), workbook)
 
-        pull_dict = {}
-
         wb = xw.Book(self.path)
         ws = wb.sheets['Dashboard']
-
         sectioncol = ['B', 'F', 'J', 'N', 'R']
+
+        pull_dict = {}
         for index, col in zip(range(5), sectioncol):
             pull_dict[f'Database {index + 1}'] = {}
             dbname = ws.range(f'{col}3').value
@@ -125,6 +86,10 @@ class EcosSet:
                              isinstance(c, (int, float)) or (isinstance(c, str) and c.isdigit())]
                 clist_iso = [c for c in clist_raw if isinstance(c, str) and re.match('[A-Z]{3}', c)]
                 clist_name = [c for c in clist_raw if c not in (clist_ifs, clist_iso)]
+                clist = clist_ifs
+                ###############################################
+                # Furture update: match iso and name to ifscode
+                ###############################################
 
             counterlist = [c for c in ws.range(f'{col}10:{col}209').value if c is not None]
             indlist_colindex = colindex + 1
@@ -141,9 +106,19 @@ class EcosSet:
         self.pull_dict = pull_dict
 
     def pull(self, debug: bool = False):
-        op = EcosData(
+        starttime = time.time()
+        data = myecosuse(
             pull_dict=self.pull_dict,
             debug=debug
         )
-        return op
 
+        timestamp = datetime.datetime.now().strftime('%Y%m%d')
+        _update_log(timestamp=timestamp, dict=self.pull_dict)
+        data.to_csv(os.path.join(folder, f'ecosdata_{timestamp}.csv'), index=False)
+        endtime = time.time()
+        print(f'Download completed. Time Duration: {round((endtime-starttime)/60, 1)}min')
+
+
+if __name__ == '__main__':
+    a = EcosSet(f'{folder}/templates/template_20240420.xlsx')
+    b = a.pull()

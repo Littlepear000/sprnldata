@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 import sv_ttk
-from sprnldata.update.monaupdate import monaupdate
+from sprnldata.downloads.monaupdate import monaupdate
 from datetime import datetime
 
 root = tk.Tk()
