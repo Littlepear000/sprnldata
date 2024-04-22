@@ -1,19 +1,17 @@
 import pandas as pd
-import xlwings as xw
 import re
-from sprnldata.core.mona.config import *
-from sprnldata.core.mona.data import MonaData, getlatestv
-import sprnldata.core.dummy.config as dum
-from sprnldata.downloads.ecos.ecosset import EcosData
+from sprnldata.myclass.mona.mona_config import *
+from sprnldata.myclass.mona.mona_base import MonaData
+from sprnldata.utils.core import get_latest_file, keep_var
 
 
-def _dbengine(version):
+def _engine_monades(version):
     if version == 'latest':
-        filename = getlatestv(tab='d')
+        filename = f'{monatab["d"]}_{get_latest_file(monad_folder)}.xlsx'
     else:
         filename = f'{monatab["d"]}_{version}.xlsx'
 
-    raw = pd.read_excel(f'{dbpath}/{filename}')
+    raw = pd.read_excel(f'{monad_folder}/{filename}')
     raw['Review Sequence'] = raw['Review Sequence'].apply(lambda x: x.strip())
     raw['Account'] = raw['Arrangement Type'].apply(lambda x: account_match(x) if x.find('-') < 0 else 'PRGT')
     raw['Actual End Date'] = raw.apply(
@@ -22,15 +20,17 @@ def _dbengine(version):
     raw['T'] = raw.apply(
         lambda row: row['Approval Year'] + 1 if row['Approval Date'].quarter == 4 else row['Approval Year'], axis=1)
     raw = raw[raw['Review Sequence'].isin(['L', 'EL', 'REL'])][list(col_des.keys())].rename(
-        columns=col_des)  # keep lastest
+        columns=col_des)  # Keep latest
     raw['country'] = raw['country'].apply(lambda x: x.title())
     return raw
+
 
 def account_match(value):
     for key, values_list in account_map.items():
         if value in values_list:
             return key
     return None
+
 
 def expand_rows(row, start: str = 'start', end: str = 'end', on: str = 'T'):
     pattern = '([Tt]\s*[+-]\s*\d)'
@@ -61,7 +61,7 @@ def expand_rows(row, start: str = 'start', end: str = 'end', on: str = 'T'):
                 'end_date': row['end_date'],
                 'T': row['T'],
                 'year': benchmark + year,
-                'year_label': 'T' if year == 0 else f'T+{str(year)}' if year>0 else f'T{str(year)}'} )
+                'year_label': 'T' if year == 0 else f'T+{str(year)}' if year > 0 else f'T{str(year)}'})
     else:
         raise ValueError('Parameter "on" only accept "T" or "app_year"')
     return pd.DataFrame(new_rows)
@@ -72,11 +72,16 @@ class MonaDes(MonaData):
         if args or kwargs:
             super().__init__(*args, **kwargs)
         else:
-            df = _dbengine(
+            df = _engine_monades(
                 version=version
             )
             super().__init__(df)
         self.dbtype = 'd'
+        self.idvar = ['arrnum', 'ifscode', 'facility', 'account', 'app_date', 'app_year', 'T', 'end_date', 'end_year']
+
+    @property
+    def _constructor(self):
+        return MonaDes
 
     @property
     def roc2018(self):
@@ -86,51 +91,17 @@ class MonaDes(MonaData):
     def roc2025(self):
         return self.loc[self['roc2025'] == 1]
 
-    def get_weo(
-            self,
-            varlist: list,
-            dbname: str = 'WEO_WEO_PUBLISHED'
-    ):
-        # Under Mona cir, only Annual Freq data requested
-        # ... and always pull all countries
-        pull_dict = {
-            'Database 1': {
-                'dbname': dbname,
-                'indlist': varlist,
-                'clist': list(self['ifscode'].unique()),
-                'freq': 'A'
-            }
-        }
-        weo = EcosData(pull_dict=pull_dict).rename(columns={'year':'T'})
-        df = pd.merge(self, weo, on=['ifscode', 'T'], how='left')
-        return df
-
-    def get_weo_from_file(
-            self,
-            filename: str,
-            sheetname: str =None
-    ):
-        sheetname = xw.Book(filename).sheets[0].name if not sheetname else sheetname
-        weo = pd.read_excel(filename, sheetname)
-        if 'ifscode' in weo.columns and 'year' in weo.columns:
-            weo.rename(columns={'year': 'T'}, inplace='True')
-            df = pd.merge(self, weo, on=['ifscode', 'T'], how='left')
-        else:
-            print('Must have ifscode and year')
-            df = None
-        return df
-
     def expand(self, start: str = 'start', end: str = 'end', on: str = 'T'):
         df = pd.concat([expand_rows(row, start=start, end=end, on=on) for _, row in self.iterrows()], ignore_index=True)
         return MonaDes(df)
 
-    @property
-    def _constructor(self):
-        return MonaDes
-
+    def keep(self, varlist: str | list, regularvars: list = None):
+        if regularvars is None:
+            regularvars = self.idvar
+        df = keep_var(self, varlist=varlist, regularvars=regularvars)
+        return df
 
 if __name__ == '__main__':
     a = MonaDes()
-    # b = a.get_weo(['NGDP', 'NGDPD'])
-    # c = b.get_weo(['GGR'], dbname='WEO_WEO_LIVE')
     d = a.expand(start='T-5', end='T+5')
+    e = a.keep('amount')

@@ -1,10 +1,10 @@
 import pandas as pd
 from sprnldata.myclass.base import ImfFrame
-from sprnldata.downloads.ecos.ecosset import folder_ecos
+from sprnldata.downloads.weovintage import folder_vintage
 from sprnldata.utils.core import get_latest_file, keep_var
 
 
-class EcosData(ImfFrame):
+class WeoVinage(ImfFrame):
     def __init__(self,
                  *args,
                  version='latest',
@@ -13,15 +13,15 @@ class EcosData(ImfFrame):
         if args or kwargs:
             super().__init__(*args, **kwargs)
         else:
-            local_version = get_latest_file(folder_ecos) if version == 'latest' else version
-            raw = pd.read_csv(f'{folder_ecos}/ecosdata_{local_version}.csv')
+            local_version = get_latest_file(folder_vintage) if version == 'latest' else version
+            raw = pd.read_csv(f'{folder_vintage}/WEOvintages_{local_version}.csv')
             super().__init__(raw)
 
-        self.idvar = ['ifscode', 'year']
+        self.idvar = ['ifscode', 'vintage_year', 'year']
 
     @property
     def _constructor(self):
-        return EcosData
+        return WeoVinage
 
     def keep(self, varlist: str | list, regularvars: list = None):
         if regularvars is None:
@@ -31,6 +31,6 @@ class EcosData(ImfFrame):
 
 
 if __name__ == '__main__':
-    a = EcosData(version='latest')
+    a = WeoVinage(version='latest')
     b = a.df
     c = a.keep(['ngdpd', 'pfb_gdp', 'iar_bmgs'])

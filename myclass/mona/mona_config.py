@@ -1,4 +1,6 @@
-dbpath = r'Q:\DATA\SPRNL\Users\NL RA\Databases\MONA'
+from sprnldata.downloads import mona_root
+
+monad_folder = f'{mona_root}/Description'
 
 monatab = {
     'd': 'Description',

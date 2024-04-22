@@ -7,8 +7,9 @@ import os
 import shutil
 import datetime
 import time
+from sprnldata.downloads import ecos_root
 
-folder_ecos = r'C:\Users\xli7\OneDrive - International Monetary Fund (PRD)\Databases\ECOS\Ecos'
+folder_ecos = f'{ecos_root}/Ecos'
 
 # Step 1: read excel of Data Pulling Tool Main Dashboard
 # Step 2: retrieve the meta info into a dictionary
@@ -110,7 +111,7 @@ class EcosSet:
             meta_dict=self.pull_dict,
             debug=debug
         )
-        data.columns = data.columns.str.replace('.A', '', regex=False).str.lower()
+        data.columns = data.columns.str.lower().str.replace('.a', '', regex=False)
 
         ### Generate commonly used variables
         data['pfb_gdp'] = (data['ggr'] - data['ggx'] + data['ggei']) / data['ngdp'] * 100  # Primary fiscal balance
@@ -125,4 +126,4 @@ class EcosSet:
 
 if __name__ == '__main__':
     a = EcosSet(f'{folder_ecos}/templates/template_20240421.xlsx')
-    b = a.pull()
+    # a.pull()

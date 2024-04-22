@@ -3,7 +3,9 @@ import imf_datatools
 import datetime
 import time
 import sprnldata.core.dummy.config as dum
+from sprnldata.downloads import ecos_root
 
+folder_vintage = f'{ecos_root}/WEOvintages'
 
 vintagelist = [
     'WEO_WEOApr2002Pub',
@@ -77,7 +79,7 @@ def pull_vintage(var_list):
     df['iar_bmgs'] = df['iar_bp6'] / (df['bmgs_bp6'] / 12)     # Reserves in months of imports
 
     timestamp = datetime.datetime.now().strftime('%Y%m%d')
-    df.to_csv(f'C:/Users/xli7/OneDrive - International Monetary Fund (PRD)/Databases/ECOS/WEOvintages/WEOvintages_{timestamp}.csv', index=False)
+    df.to_csv(f'{folder_vintage}/WEOvintages_{timestamp}.csv', index=False)
     endtime = time.time()
     print(f'Download complete. Time Duration: {round((endtime-starttime)/60, 1)}min')
 
