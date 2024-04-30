@@ -2,7 +2,7 @@ import pandas as pd
 import imf_datatools
 import datetime
 import time
-import sprnldata.core.dummy.config as dum
+import sprnldata.deprecated_core_20240430.dummy.config as dum
 from sprnldata.downloads import ecos_root
 
 folder_vintage = f'{ecos_root}/WEOvintages'

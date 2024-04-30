@@ -1,6 +1,6 @@
 from swxl.pandaspro.core import pwread
-from sprnldata.core.frame import ImfFrame
-import sprnldata.core.dummy.config as c
+from sprnldata.deprecated_core_20240430.frame import ImfFrame
+import sprnldata.deprecated_core_20240430.dummy.config as c
 import pandas as pd
 from pandaspro import FramePro
 

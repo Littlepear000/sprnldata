@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 import sv_ttk
-from sprnldata.downloads.monaupdate import monaupdate
+from sprnldata.downloads.monadownload import mona_download
 from datetime import datetime
 
 root = tk.Tk()
@@ -19,7 +19,7 @@ entry_version.insert(0, datetime.strftime(datetime.now(), '%Y%m%d'))
 entry_version.grid(row=0, column=1, columnspan=2, pady=10)
 
 # Button
-monabutton = ttk.Button(page, text='MONA Update', command=lambda : monaupdate(entry_version))
+monabutton = ttk.Button(page, text='MONA Update', command=lambda : mona_download(entry_version))
 monabutton.grid(row=1, column=0, columnspan=3, pady=10)
 
 sv_ttk.set_theme("dark")

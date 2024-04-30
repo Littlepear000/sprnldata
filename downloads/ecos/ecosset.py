@@ -1,4 +1,4 @@
-import sprnldata.core.dummy.config as dum
+import sprnldata.deprecated_core_20240430.dummy.config as dum
 import sprnldata.downloads.ecos.config as c
 from sprnldata.utils.myecosuse import myecosuse
 from openpyxl.utils import column_index_from_string, get_column_letter

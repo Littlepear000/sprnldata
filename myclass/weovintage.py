@@ -1,7 +1,8 @@
 import pandas as pd
-from sprnldata.myclass.base import ImfFrame
+import re
+from sprnldata.myclass.ImfFrame import ImfFrame
 from sprnldata.downloads.weovintage import folder_vintage
-from sprnldata.utils.core import get_latest_file, keep_var
+from sprnldata.utils.core import get_latest_file
 
 
 class WeoVinage(ImfFrame):
@@ -23,14 +24,14 @@ class WeoVinage(ImfFrame):
     def _constructor(self):
         return WeoVinage
 
-    def keep(self, varlist: str | list, regularvars: list = None):
-        if regularvars is None:
-            regularvars = self.idvar
-        df = keep_var(self, varlist=varlist, regularvars=regularvars)
-        return df
+    def keep_var(self, varlist: str):
+        keeplist = '; '.join(self.idvar) + '; ' + varlist
+        return self.br(keeplist)
 
 
 if __name__ == '__main__':
     a = WeoVinage(version='latest')
-    b = a.df
-    c = a.keep(['ngdpd', 'pfb_gdp', 'iar_bmgs'])
+    b = a.y2005
+
+    # years = (2006, 2008)
+    # c = a.keep_var('ngdp; iar_bp6')

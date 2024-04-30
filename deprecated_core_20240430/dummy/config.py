@@ -1,4 +1,4 @@
-from sprnldata.core.frame import ImfFrame
+from sprnldata.deprecated_core_20240430.frame import ImfFrame
 import pandas as pd
 from datetime import datetime
 

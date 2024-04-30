@@ -1,7 +1,8 @@
 import pandas as pd
-from sprnldata.myclass.base import ImfFrame
+import re
+from sprnldata.myclass.ImfFrame import ImfFrame
 from sprnldata.downloads.ecos.ecosset import folder_ecos
-from sprnldata.utils.core import get_latest_file, keep_var
+from sprnldata.utils.core import get_latest_file
 
 
 class EcosData(ImfFrame):
@@ -19,18 +20,32 @@ class EcosData(ImfFrame):
 
         self.idvar = ['ifscode', 'year']
 
+    def __getattr__(self, item):
+        if re.fullmatch(r'y\d{4}', item):
+            keepkey = int(re.fullmatch(r'y(\d{4})', item).group(1))
+            return self.inlist('year', keepkey)
+        elif re.fullmatch(r'y\d{4}_\d{4}', item):
+            startyear = int(re.fullmatch(r'y(\d{4})_(\d{4})', item).group(1))
+            endyear = int(re.fullmatch(r'y(\d{4})_(\d{4})', item).group(2))
+            return self.inlist('year', [i for i in range(startyear, endyear+1)])
+        elif re.fullmatch(r'y(\d+)', item):
+            numbers = re.fullmatch(r'y(\d+)', item).group(1)
+            if len(numbers) % 4 == 0:
+                years = [int(numbers[i: i+4]) for i in range(0, len(numbers), 4)]
+                return self.inlist('year', years)
+            else:
+                raise ValueError('Enter separate years in 4-digit format, eg. 200120042008 for year 2001, 2004 and 2008')
+
     @property
     def _constructor(self):
         return EcosData
 
-    def keep(self, varlist: str | list, regularvars: list = None):
-        if regularvars is None:
-            regularvars = self.idvar
-        df = keep_var(self, varlist=varlist, regularvars=regularvars)
-        return df
+    def keep_var(self, varlist: str):
+        keeplist = '; '.join(self.idvar) + '; ' + varlist
+        return self.br(keeplist)
 
 
 if __name__ == '__main__':
     a = EcosData(version='latest')
     b = a.df
-    c = a.keep(['ngdpd', 'pfb_gdp', 'iar_bmgs'])
+    c = a.keep_var('ngdp')

@@ -6,7 +6,7 @@ root_path = r'C:\Users\xli7\OneDrive - International Monetary Fund (PRD)'
 project_path = root_path + '/General - SPR-SPRNL-2024 ROC – Diagnostic chapter'
 
 rocdummy_file = project_path + '/Data/ROC base sample.xlsx'
-programdummy_file = project_path + '/Data/Macroeconomic output/Dummies_program with debt restructure.xlsx'
+programdummy_file = project_path + '/Data/Macroeconomic output/raw data/Dummies_program with debt restructure.xlsx'
 
 # ROC Dummies
 roc2025 = pd.read_excel(rocdummy_file, 'ROC2024').sort_values('Arrangement Number')['Arrangement Number'].to_list()

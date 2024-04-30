@@ -2,7 +2,7 @@ import pandas as pd
 import re
 from sprnldata.myclass.mona.mona_config import *
 from sprnldata.myclass.mona.mona_base import MonaData
-from sprnldata.utils.core import get_latest_file, keep_var
+from sprnldata.utils.core import get_latest_file
 
 
 def _engine_monades(version):
@@ -77,29 +77,17 @@ class MonaDes(MonaData):
             )
             super().__init__(df)
         self.dbtype = 'd'
+        self.version = version
         self.idvar = ['arrnum', 'ifscode', 'facility', 'account', 'app_date', 'app_year', 'T', 'end_date', 'end_year']
 
     @property
     def _constructor(self):
         return MonaDes
 
-    @property
-    def roc2018(self):
-        return self.loc[self['roc2018'] == 1]
-
-    @property
-    def roc2025(self):
-        return self.loc[self['roc2025'] == 1]
-
     def expand(self, start: str = 'start', end: str = 'end', on: str = 'T'):
         df = pd.concat([expand_rows(row, start=start, end=end, on=on) for _, row in self.iterrows()], ignore_index=True)
         return MonaDes(df)
 
-    def keep(self, varlist: str | list, regularvars: list = None):
-        if regularvars is None:
-            regularvars = self.idvar
-        df = keep_var(self, varlist=varlist, regularvars=regularvars)
-        return df
 
 if __name__ == '__main__':
     a = MonaDes()
