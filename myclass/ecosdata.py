@@ -40,6 +40,11 @@ class EcosData(ImfFrame):
     def _constructor(self):
         return EcosData
 
+    @property
+    def wdi(self):
+        wdivars = [i for i in self.columns if '.' in i]
+        return self[['ifscode', 'year'] + wdivars]
+
     def keep_var(self, varlist: str):
         keeplist = '; '.join(self.idvar) + '; ' + varlist
         return self.br(keeplist)
@@ -47,5 +52,6 @@ class EcosData(ImfFrame):
 
 if __name__ == '__main__':
     a = EcosData(version='latest')
-    b = a.df
-    c = a.keep_var('ngdp')
+    b = a.dummy
+    c = b.expand_column(['repeat_ufr', 'emde']).dropna(subset=['expand_value'])
+    d = c.df

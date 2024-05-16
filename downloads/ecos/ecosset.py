@@ -1,4 +1,4 @@
-import sprnldata.deprecated_core_20240430.dummy.config as dum
+import sprnldata.myclass.dummy as dum
 import sprnldata.downloads.ecos.config as c
 from sprnldata.utils.myecosuse import myecosuse
 from openpyxl.utils import column_index_from_string, get_column_letter
@@ -125,5 +125,15 @@ class EcosSet:
 
 
 if __name__ == '__main__':
-    a = EcosSet(f'{folder_ecos}/templates/template_20240421.xlsx')
-    # a.pull()
+    a = EcosSet(f'{folder_ecos}/templates/template_20240515.xlsx')
+    a.pull()
+    # wdi_dict = {
+    #     'Database 1': {
+    #         'dbname': 'ECDATA_WB_WDI',
+    #         'clist': [111, 112],
+    #         'indlist': ['NY.GDP.PCAP.PP.KD', 'SI.POV.GINI'],
+    #         'freq': 'A',
+    #         'start': 2000,
+    #         'end': 2020
+    #     }}
+    # b = myecosuse(wdi_dict)
