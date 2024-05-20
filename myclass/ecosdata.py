@@ -51,7 +51,15 @@ class EcosData(ImfFrame):
 
 
 if __name__ == '__main__':
+    from sprnldata.utils.core import ifs_to_countryname
+
     a = EcosData(version='latest')
-    b = a.dummy
-    c = b.expand_column(['repeat_ufr', 'emde']).dropna(subset=['expand_value'])
-    d = c.df
+    # b = a.dummy
+    # c = b.expand_column(['repeat_ufr', 'emde']).dropna(subset=['expand_value']).rename(
+    #         columns={'expand_value': 'group'})
+    # d = c.df
+    e = a.create_boxplot_data(group_dummies=['repeat_ufr', 'emde'],
+                              varname='si.pov.gini',
+                              year='latest',
+                              keep_group=['Challenging Repeat Users', 'Regular Repeat Users', 'FCLs/PLLs', 'EMDE'])
+    f = e.df

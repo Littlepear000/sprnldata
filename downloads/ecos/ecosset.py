@@ -115,7 +115,9 @@ class EcosSet:
 
         ### Generate commonly used variables
         data['pfb_gdp'] = (data['ggr'] - data['ggx'] + data['ggei']) / data['ngdp'] * 100  # Primary fiscal balance
+        data['gges_gdp'] = data['gges'] / data['ngdp'] * 100  # Social benefits (%GDP)
         data['iar_bmgs'] = data['iar_bp6'] / (data['bmgs_bp6'] / 12)  # Reserves in months of imports
+        data['gc.xpn.socl.gdp'] = data['gc.xpn.trft.cn'] / data['ny.gdp.mktp.cn'] * 100  # WDI: Social spending to GDP
 
         timestamp = datetime.datetime.now().strftime('%Y%m%d')
         _update_log(timestamp=timestamp, logdict=self.pull_dict)
@@ -125,7 +127,7 @@ class EcosSet:
 
 
 if __name__ == '__main__':
-    a = EcosSet(f'{folder_ecos}/templates/template_20240515.xlsx')
+    a = EcosSet(f'{folder_ecos}/templates/template_20240516.xlsx')
     a.pull()
     # wdi_dict = {
     #     'Database 1': {

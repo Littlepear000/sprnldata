@@ -2,6 +2,7 @@ import pandas as pd
 import re
 from pandaspro.core.frame import FramePro
 from sprnldata.myclass.dummy import Dummy
+from sprnldata.utils.core import ifs_to_countryname
 
 
 def filter_year(df, years: str, ftype: str):
@@ -53,8 +54,36 @@ class ImfFrame(FramePro):
         countrydummy = Dummy()
         return pd.merge(self, countrydummy, on='ifscode', how='left')
 
-    def create_boxplot_data(self):
-        self.expand
+    def get_latest_available_data(self, varname: str):
+        filtered_df = self.dropna(subset=[varname])
+        latest_df = filtered_df.sort_values('year').groupby('ifscode').tail(1)
+        result_df = latest_df[['ifscode', 'year', varname]].rename(columns={'year': 'latest_available_year'})
+        return result_df
+
+    def create_boxplot_data(self,
+                            group_dummies: list,
+                            varname: str | list,
+                            year: int | str,
+                            keep_group: list = None):
+        varlist = [varname] if isinstance(varname, str) else varname
+
+        if isinstance(year, int):
+            final_cols = ['group', 'country', 'ifscode', 'year'] + varlist
+            df = self[self['year'] == year]
+        if isinstance(year, str):
+            final_cols = ['group', 'country', 'ifscode', 'latest_available_year'] + varlist
+            df = self.get_latest_available_data(varname)
+
+        df = df.dummy.expand_column(group_dummies).dropna(subset=['expand_value']).rename(
+                columns={'expand_value': 'group'})[final_cols].sort_values('group')
+        if keep_group:
+            df = df[df['group'].isin(keep_group)]
+            df['group'] = pd.Categorical(df['group'], categories=keep_group, ordered=True)
+            df = df.sort_values('group').reset_index(drop=True)
+        return df
+
+    def create_individual_col_data(self):
+        pass
 
 if __name__ == '__main__':
     a = FramePro().expand_column
