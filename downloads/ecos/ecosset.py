@@ -105,7 +105,7 @@ class EcosSet:
 
         self.pull_dict = pull_dict
 
-    def pull(self, debug: bool = False):
+    def pull(self, export: bool = False, debug: bool = False):
         starttime = time.time()
         data = myecosuse(
             meta_dict=self.pull_dict,
@@ -113,22 +113,24 @@ class EcosSet:
         )
         data.columns = data.columns.str.lower().str.replace('.a', '', regex=False)
 
-        ### Generate commonly used variables
-        data['pfb_gdp'] = (data['ggr'] - data['ggx'] + data['ggei']) / data['ngdp'] * 100  # Primary fiscal balance
-        data['gges_gdp'] = data['gges'] / data['ngdp'] * 100  # Social benefits (%GDP)
-        data['iar_bmgs'] = data['iar_bp6'] / (data['bmgs_bp6'] / 12)  # Reserves in months of imports
-        data['gc.xpn.socl.gdp'] = data['gc.xpn.trft.cn'] / data['ny.gdp.mktp.cn'] * 100  # WDI: Social spending to GDP
+        if export:
+            ### Generate commonly used variables
+            data['pfb_gdp'] = (data['ggr'] - data['ggx'] + data['ggei']) / data['ngdp'] * 100  # Primary fiscal balance
+            data['gges_gdp'] = data['gges'] / data['ngdp'] * 100  # Social benefits (%GDP)
+            data['iar_bmgs'] = data['iar_bp6'] / (data['bmgs_bp6'] / 12)  # Reserves in months of imports
+            data['gc.xpn.socl.gdp'] = data['gc.xpn.trft.cn'] / data['ny.gdp.mktp.cn'] * 100  # WDI: Social spending to GDP
 
-        timestamp = datetime.datetime.now().strftime('%Y%m%d')
-        _update_log(timestamp=timestamp, logdict=self.pull_dict)
-        data.to_csv(os.path.join(folder_ecos, f'ecosdata_{timestamp}.csv'), index=False)
-        endtime = time.time()
-        print(f'Download completed. Time Duration: {round((endtime-starttime)/60, 1)}min')
-
+            timestamp = datetime.datetime.now().strftime('%Y%m%d')
+            _update_log(timestamp=timestamp, logdict=self.pull_dict)
+            data.to_csv(os.path.join(folder_ecos, f'ecosdata_{timestamp}.csv'), index=False)
+            endtime = time.time()
+            print(f'Download completed. Time Duration: {round((endtime-starttime)/60, 1)}min')
+        else:
+            return data
 
 if __name__ == '__main__':
     a = EcosSet(f'{folder_ecos}/templates/template_20240516.xlsx')
-    a.pull()
+    a.pull(export=True)
     # wdi_dict = {
     #     'Database 1': {
     #         'dbname': 'ECDATA_WB_WDI',

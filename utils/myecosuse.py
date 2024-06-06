@@ -75,8 +75,8 @@ def myecosuse(
     df.rename(columns={'COUNTRY': 'ifscode'}, inplace=True)
     df['ifscode'] = df['ifscode'].astype(int)
     df['year'] = df['dates'].dt.year
-    df.drop(columns='dates', inplace=True)
-    new_order = ['ifscode', 'year'] + [col for col in df.columns if col not in ['ifscode', 'year']]  # reorder the columns
+    # df.drop(columns='dates', inplace=True)
+    new_order = ['ifscode', 'year', 'dates'] + [col for col in df.columns if col not in ['ifscode', 'year', 'dates']]  # reorder the columns
     return df[new_order]
 
 if __name__ == '__main__':

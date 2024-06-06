@@ -7,7 +7,9 @@ from sprnldata.downloads.ecos.ecosset import (
 from sprnldata.myclass.api import (
     ecos,
     monades,
-    weovint
+    weovint,
+    wo_aggregate,
+    w_aggregate
 )
 
 from sprnldata.report.api import (
@@ -27,5 +29,7 @@ __all__ = [
     'roc2025_list',
     'boxplot',
     'c',
-    'EcosSet'
+    'EcosSet',
+    'wo_aggregate',
+    'w_aggregate'
 ]

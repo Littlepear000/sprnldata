@@ -9,6 +9,7 @@ countrycode = pd.read_excel(countrycode_file, sheet_name='Match')
 countryname_to_ifs = {row['Name']: int(row['Code']) for index, row in countrycode.iterrows()}
 countryname_to_iso = {row['Name']: row['ISO-3 code'] for index, row in countrycode.iterrows()}
 ifs_to_iso = {int(row['Code']): row['ISO-3 code'] for index, row in countrycode.iterrows()}
+iso_to_ifs = {row['ISO-3 code']: int(row['Code']) for index, row in countrycode.iterrows() if row['ISO-3 code'] is not None}
 ifs_to_countryname = {int(row['Code']): row['Name'] for index, row in countrycode.iterrows()}
 iso_to_countryname = {row['ISO-3 code']: row['Name'] for index, row in countrycode.iterrows()}
 
