@@ -1,4 +1,5 @@
 import pandas as pd
+from sprnldata.config import onedrive_root
 
 wbiso_replace = {
     'KSV': 'KOS',
@@ -8,7 +9,7 @@ wbiso_replace = {
     'ROM': 'ROU'
 }
 
-ufr_root = r'C:\Users\xli7\OneDrive - International Monetary Fund (PRD)\General - SPR-Prolonged UFR\Data\WGI'
+ufr_root = fr'{onedrive_root}\General - SPR-Prolonged UFR\Data\WGI'
 
 # Grouping 1: UFR defined groups
 ufr_groupfile = f'{ufr_root}/raw/Repeated User Country Groups.xlsx'

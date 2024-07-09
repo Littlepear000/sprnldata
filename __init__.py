@@ -16,7 +16,7 @@ from sprnldata.report.api import (
     rocmona,
     roc2018_list,
     roc2025_list,
-    boxplot
+    # boxplot
 )
 
 
@@ -27,7 +27,7 @@ __all__ = [
     'rocmona',
     'roc2018_list',
     'roc2025_list',
-    'boxplot',
+    # 'boxplot',
     'c',
     'EcosSet',
     'wo_aggregate',

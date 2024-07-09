@@ -1,3 +1,4 @@
+from sprnldata.config import onedrive_root
 
-ecos_root = r'C:\Users\xli7\OneDrive - International Monetary Fund (PRD)\Databases\ECOS'
-mona_root = r'C:\Users\xli7\OneDrive - International Monetary Fund (PRD)\Databases\MONA'
+ecos_root = fr'{onedrive_root}\Databases\ECOS'
+mona_root = fr'{onedrive_root}\Databases\MONA'

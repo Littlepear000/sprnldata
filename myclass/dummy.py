@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
 from pandaspro import FramePro
+from sprnldata.config import onedrive_root
 
-
-countrydummy_file = r'Q:\DATA\SPRNL\Users\NL RA\Country Code & Template\Country Code & Grouping\xlarchive\xldummies.xlsx'
+countrydummy_file = fr'{onedrive_root}\0_tools\Country Code & Template\Country Code & Grouping\xlarchive\xldummies.xlsx'
 
 # Country lists
 w_aggregate = FramePro(pd.read_excel(countrydummy_file)).inlist('w_aggregate', 1)['ifscode'].tolist()

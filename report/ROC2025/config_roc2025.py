@@ -1,7 +1,8 @@
 import pandas as pd
+from sprnldata.config import onedrive_root
 
 # root path does not need to change
-root_path = r'C:\Users\xli7\OneDrive - International Monetary Fund (PRD)'
+root_path = fr'{onedrive_root}'
 
 project_path = root_path + '/General - SPR-SPRNL-2024 ROC – Diagnostic chapter'
 
