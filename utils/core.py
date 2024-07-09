@@ -12,6 +12,7 @@ countryname_to_iso = {row['Name']: row['ISO-3 code'] for index, row in countryco
 countryname_to_iso2 = {row['Name']: row['ISO-2 code'] for index, row in countrycode.iterrows()}
 ifs_to_iso = {int(row['Code']): row['ISO-3 code'] for index, row in countrycode.iterrows()}
 iso_to_ifs = {row['ISO-3 code']: int(row['Code']) for index, row in countrycode.iterrows() if row['ISO-3 code'] is not None}
+iso2_to_ifs = {row['ISO-2 code']: int(row['Code']) for index, row in countrycode.iterrows() if row['ISO-2 code'] is not None}
 ifs_to_countryname = {int(row['Code']): row['Name'] for index, row in countrycode.iterrows()}
 iso_to_countryname = {row['ISO-3 code']: row['Name'] for index, row in countrycode.iterrows()}
 iso2_to_countryname = {row['ISO-2 code']: row['Name'] for index, row in countrycode.iterrows()}
