@@ -99,3 +99,5 @@ if __name__ == '__main__':
         }
     }
     a = myecosuse(pull_dict, debug=True)
+
+    import imf_datatools

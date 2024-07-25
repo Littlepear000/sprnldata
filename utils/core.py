@@ -6,6 +6,7 @@ from sprnldata.config import onedrive_root
 
 countrycode_file = fr'{onedrive_root}\0_tools\Country Code & Template\Country Code & Grouping\Country Codes.xlsx'
 countrycode = pd.read_excel(countrycode_file, sheet_name='Match')
+countrycode.loc[countrycode['Code'] == 728, 'ISO-2 code'] = 'NA'
 
 countryname_to_ifs = {row['Name']: int(row['Code']) for index, row in countrycode.iterrows()}
 countryname_to_iso = {row['Name']: row['ISO-3 code'] for index, row in countrycode.iterrows()}

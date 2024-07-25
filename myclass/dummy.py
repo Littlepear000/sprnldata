@@ -1,26 +1,32 @@
 import pandas as pd
 import numpy as np
 from pandaspro import FramePro
-from sprnldata.config import onedrive_root
-
-countrydummy_file = fr'{onedrive_root}\0_tools\Country Code & Template\Country Code & Grouping\xlarchive\xldummies.xlsx'
-
-# Country lists
-w_aggregate = FramePro(pd.read_excel(countrydummy_file)).inlist('w_aggregate', 1)['ifscode'].tolist()
-wo_aggregate = FramePro(pd.read_excel(countrydummy_file)).inlist('wo_aggregate', 1)['ifscode'].tolist()
+from pandaspro.cpdbase.cpd_base_frame import cpdBaseFrame
 
 
+dummy_path = r'C:\Users\xli7\OneDrive - International Monetary Fund (PRD)\Databases\Dummy'
+
+
+@cpdBaseFrame(path=dummy_path, file_type='xlsx')
 class Dummy(FramePro):
 
-    def __init__(self, *args, **kwargs):
-        if args or kwargs:
-            super().__init__(*args, **kwargs)
-        else:
-            data = pd.read_excel(countrydummy_file)
-            data['emde'] = data['income_emde'].replace(1, 'EMDE').replace(0, np.nan)
-            super().__init__(data)
+    @property
+    def emde(self):
+        return self.inlist('income_emde', 1)['ifscode'].tolist()
+
+    @property
+    def w_aggregate(self):
+        return self.inlist('w_aggregate', 1)['ifscode'].tolist()
+
+    @property
+    def wo_aggregate(self):
+        return self.inlist('wo_aggregate', 1)['ifscode'].tolist()
+
 
 if __name__ == '__main__':
+    from sprnldata.myclass.country_grouping import CountryGrouping as cg
     a = Dummy()
-    b = a.df[['ifscode', 'emde']]
+    b = cg().get_by_groupcode(200)
+    c = a.inlist('ifscode', b, engine='c', rename='emde').df
+    # b = a.df[['ifscode', 'emde']]
 
