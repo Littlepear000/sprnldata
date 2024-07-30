@@ -35,6 +35,9 @@ class EcosData(ImfFrame):
                 return self.inlist('year', years)
             else:
                 raise ValueError('Enter separate years in 4-digit format, eg. 200120042008 for year 2001, 2004 and 2008')
+        else:
+            return super().__getattr__(item)
+
 
     @property
     def _constructor(self):

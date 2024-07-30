@@ -5,6 +5,8 @@ import time
 import sprnldata.myclass.dummy as dum
 from sprnldata.downloads import ecos_root
 
+wo_aggregate = dum.Dummy().noagg
+
 folder_vintage = f'{ecos_root}/WEOvintages'
 
 vintagelist = [
@@ -63,7 +65,7 @@ def pull_vintage(var_list):
     df = pd.DataFrame()
     for database in vintagelist:
         print(database)
-        dfweo = imf_datatools.get_ecos_sdmx_data(database, dum.wo_aggregate, var_list, freq='A', longformat=True)
+        dfweo = imf_datatools.get_ecos_sdmx_data(database, wo_aggregate, var_list, freq='A', longformat=True)
         if not isinstance(dfweo, pd.DataFrame):
             continue
         dfweo['vintage_year'] = int(database[10:14])

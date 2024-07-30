@@ -1,4 +1,4 @@
-import sprnldata.myclass.dummy as dum
+from sprnldata.myclass.dummy import Dummy
 import sprnldata.downloads.ecos.config as c
 from sprnldata.utils.myecosuse import myecosuse
 from openpyxl.utils import column_index_from_string, get_column_letter
@@ -75,9 +75,9 @@ class EcosSet:
             countryselect = ws.range(f'{col}7').value
 
             if countryselect == 'All countries w/o aggregates':
-                clist = dum.wo_aggregate
+                clist = Dummy().noagg
             elif countryselect == 'All countries w aggregates (WLD, WAEMU, EURO, and ECCU)':
-                clist = dum.w_aggregate
+                clist = Dummy().all
             else:
                 clist_colindex = colindex - 1
                 clist_col = get_column_letter(clist_colindex)
@@ -129,7 +129,7 @@ class EcosSet:
             return data
 
 if __name__ == '__main__':
-    a = EcosSet(f'{folder_ecos}/templates/template_20240703.xlsx')
+    a = EcosSet(f'{folder_ecos}/templates/template_20240726.xlsx')
     a.pull(export=True)
     # wdi_dict = {
     #     'Database 1': {

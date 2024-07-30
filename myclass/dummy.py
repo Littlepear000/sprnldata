@@ -10,18 +10,23 @@ dummy_path = r'C:\Users\xli7\OneDrive - International Monetary Fund (PRD)\Databa
 @cpdBaseFrame(path=dummy_path, file_type='xlsx')
 class Dummy(FramePro):
 
-    @property
-    def emde(self):
-        return self.inlist('income_emde', 1)['ifscode'].tolist()
+    def __getattr__(self, item):
+        if item in self.columns:
+            return self.inlist(item, 1)['ifscode'].tolist()
+        else:
+            return super().__getattr__(item)
 
     @property
-    def w_aggregate(self):
-        return self.inlist('w_aggregate', 1)['ifscode'].tolist()
+    def g20(self):
+        return self.inlist('g20_adv', 1)['ifscode'].tolist() + self.inlist('g20_eme', 1)['ifscode'].tolist()
 
     @property
-    def wo_aggregate(self):
-        return self.inlist('wo_aggregate', 1)['ifscode'].tolist()
+    def ae_noUS(self):
+        return [c for c in self.inlist('ae', 1)['ifscode'].tolist() if c != 111]
 
+    @property
+    def em_noChina(self):
+        return [c for c in self.inlist('em', 1)['ifscode'].tolist() if c != 924]
 
 if __name__ == '__main__':
     from sprnldata.myclass.country_grouping import CountryGrouping as cg
